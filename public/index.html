@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>短链接管理</title>
+    <link rel="icon" type="image/png" sizes="96x96" href="/icons8-link-96.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0f0f14;
+            --bg-secondary: #1a1a24;
+            --bg-tertiary: #252532;
+            --text-primary: #f0f0f5;
+            --text-secondary: #9090a0;
+            --accent: #6366f1;
+            --accent-hover: #818cf8;
+            --danger: #ef4444;
+            --danger-hover: #f87171;
+            --success: #10b981;
+            --border: #2d2d3d;
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--accent), #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+        }
+
+        /* 登录卡片 */
+        .login-card {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: transparent;
+            padding: 0;
+            border: none;
+            box-shadow: none;
+            max-width: 450px;
+            width: 90%;
+            margin: 0;
+        }
+
+        .login-input-wrapper {
+            display: flex;
+            align-items: center;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            padding: 4px 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .login-input-wrapper input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 16px 0;
+            font-size: 1rem;
+            color: var(--text-primary);
+        }
+
+        .login-input-wrapper input:focus {
+            outline: none;
+            box-shadow: none;
+        }
+
+        .enter-icon {
+            color: var(--text-secondary);
+            font-size: 1.25rem;
+            opacity: 0.5;
+        }
+
+        .github-link {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--text-secondary);
+            opacity: 0.5;
+            transition: all 0.2s;
+        }
+
+        .github-link:hover {
+            color: var(--accent);
+            opacity: 1;
+        }
+
+        .login-card h2 {
+            margin-bottom: 24px;
+            font-size: 1.5rem;
+        }
+
+        /* 表单元素 */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        input::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.6;
+        }
+
+        /* 按钮 */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background: transparent;
+            color: var(--danger);
+            padding: 8px 16px;
+            font-size: 0.875rem;
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            padding: 8px 16px;
+            font-size: 0.875rem;
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        /* 管理面板 */
+        .panel {
+            display: none;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        /* 添加表单 */
+        .add-form {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border);
+        }
+
+        .add-form h3 {
+            margin-bottom: 16px;
+            font-size: 1.125rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 160px auto;
+            gap: 12px;
+            align-items: end;
+        }
+
+        .form-row .btn {
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 640px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 链接列表 */
+        .links-table {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .table-header {
+            display: grid;
+            grid-template-columns: 140px 1fr 180px 200px;
+            padding: 16px 20px;
+            background: var(--bg-tertiary);
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .link-row {
+            display: grid;
+            grid-template-columns: 140px 1fr 180px 200px;
+            padding: 16px 20px;
+            border-top: 1px solid var(--border);
+            align-items: center;
+            transition: background 0.2s;
+        }
+
+        .link-row:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .link-code {
+            font-family: 'SF Mono', Monaco, monospace;
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        .link-url {
+            color: var(--text-secondary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding-right: 16px;
+        }
+
+        .link-date {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .link-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .table-header {
+                display: none;
+            }
+
+            .link-row {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+
+            .link-actions {
+                justify-content: flex-start;
+            }
+        }
+
+        /* 搜索框 */
+        .search-bar {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .search-bar input {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* 消息提示 */
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-60px);
+            padding: 10px 32px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            box-shadow: var(--shadow);
+            opacity: 0;
+            transition: all 0.3s;
+            font-size: 0.875rem;
+            z-index: 2000;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            border-color: var(--success);
+        }
+
+        .toast.error {
+            border-color: var(--danger);
+        }
+
+        /* 加载状态 */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        /* 确认弹窗 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s;
+            z-index: 1000;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 400px;
+            width: 90%;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            transform: scale(0.9);
+            transition: transform 0.2s;
+        }
+
+        .modal-overlay.show .modal {
+            transform: scale(1);
+        }
+
+        .modal h3 {
+            margin-bottom: 12px;
+        }
+
+        .modal p {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .modal-actions .btn {
+            width: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- 登录面板 -->
+        <div id="loginPanel" class="login-card">
+            <form id="loginForm" class="login-input-wrapper">
+                <input type="password" id="adminKey" placeholder="开门密码" required>
+                <span class="enter-icon">↵</span>
+            </form>
+        </div>
+
+        <!-- 管理面板 -->
+        <div id="adminPanel" class="panel">
+            <div class="header">
+                <div>
+                    <h1>短链接管理</h1>
+                    <p class="subtitle">创建和管理您的短链接</p>
+                </div>
+                <div class="header-actions">
+                    <button id="logoutBtn" class="btn btn-secondary">退出登录</button>
+                </div>
+            </div>
+
+            <!-- 添加表单 -->
+            <div class="add-form">
+                <h3>创建短链接</h3>
+                <form id="addForm" class="form-row">
+                    <div class="form-group">
+                        <label for="targetUrl">目标 URL</label>
+                        <input type="url" id="targetUrl" placeholder="https://example.com/..." required>
+                    </div>
+                    <div class="form-group">
+                        <label for="shortCode">短码（可选）</label>
+                        <input type="text" id="shortCode" placeholder="留空自动生成" pattern="[a-zA-Z0-9_-]+" maxlength="32">
+                    </div>
+                    <button type="submit" class="btn btn-primary">创建</button>
+                </form>
+            </div>
+
+            <!-- 链接列表 -->
+            <div class="links-table">
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="搜索短码或目标 URL...">
+                </div>
+                <div class="table-header">
+                    <span>短码</span>
+                    <span>目标 URL</span>
+                    <span>创建时间</span>
+                    <span>操作</span>
+                </div>
+                <div id="linksList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 消息提示 -->
+    <div id="toast" class="toast"></div>
+
+    <!-- 确认弹窗 -->
+    <div id="confirmModal" class="modal-overlay">
+        <div class="modal">
+            <h3>确认删除</h3>
+            <p id="confirmMessage">确定要删除这个短链接吗？</p>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeConfirm()">取消</button>
+                <button class="btn btn-danger" id="confirmBtn">删除</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- GitHub 链接 -->
+    <a href="https://github.com/hypooo/cloudflare-shortener" target="_blank" class="github-link" title="GitHub">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path
+                d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+        </svg>
+    </a>
+
+    <script>
+        const API_BASE = '';
+        let authToken = localStorage.getItem('adminToken') || '';
+
+        // DOM 元素
+        const loginPanel = document.getElementById('loginPanel');
+        const adminPanel = document.getElementById('adminPanel');
+        const loginForm = document.getElementById('loginForm');
+        const addForm = document.getElementById('addForm');
+        const linksList = document.getElementById('linksList');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const toast = document.getElementById('toast');
+
+        // 初始化
+        init();
+
+        async function init() {
+            if (authToken) {
+                const valid = await verifyToken();
+                if (valid) {
+                    showAdminPanel();
+                    loadLinks();
+                } else {
+                    logout();
+                }
+            } else {
+                loginPanel.style.display = 'block';
+            }
+        }
+
+        // 验证 token
+        async function verifyToken() {
+            try {
+                const response = await fetch(`${API_BASE}/api/links`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                return response.ok;
+            } catch {
+                return false;
+            }
+        }
+
+        // 显示管理面板
+        function showAdminPanel() {
+            loginPanel.style.display = 'none';
+            adminPanel.classList.add('active');
+        }
+
+        // 登录
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const key = document.getElementById('adminKey').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ key })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    authToken = key;
+                    localStorage.setItem('adminToken', key);
+                    showAdminPanel();
+                    loadLinks();
+                    showToast('登录成功', 'success');
+                } else {
+                    showToast('密钥错误', 'error');
+                }
+            } catch (err) {
+                showToast('登录失败', 'error');
+            }
+        });
+
+        // 退出登录
+        logoutBtn.addEventListener('click', logout);
+
+        function logout() {
+            authToken = '';
+            localStorage.removeItem('adminToken');
+            loginPanel.style.display = 'block';
+            adminPanel.classList.remove('active');
+            document.getElementById('adminKey').value = '';
+        }
+
+        // 加载链接列表
+        let allLinks = [];
+        const searchInput = document.getElementById('searchInput');
+
+        async function loadLinks() {
+            try {
+                const response = await fetch(`${API_BASE}/api/links`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                const data = await response.json();
+                allLinks = data.links || [];
+                filterAndRenderLinks();
+            } catch (err) {
+                showToast('加载失败', 'error');
+            }
+        }
+
+        // 搜索过滤
+        searchInput.addEventListener('input', filterAndRenderLinks);
+
+        function filterAndRenderLinks() {
+            const query = searchInput.value.toLowerCase().trim();
+            const filtered = query
+                ? allLinks.filter(link =>
+                    link.code.toLowerCase().includes(query) ||
+                    link.url.toLowerCase().includes(query)
+                )
+                : allLinks;
+
+            if (filtered.length > 0) {
+                renderLinks(filtered);
+            } else if (allLinks.length === 0) {
+                linksList.innerHTML = `
+            <div class="empty-state">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+              </svg>
+              <p>暂无短链接，创建一个吧</p>
+            </div>
+          `;
+            } else {
+                linksList.innerHTML = `
+            <div class="empty-state">
+              <p>没有找到匹配的结果</p>
+            </div>
+          `;
+            }
+        }
+
+        // 渲染链接列表
+        function renderLinks(links) {
+            linksList.innerHTML = links.map(link => {
+                const shortUrl = `${location.origin}/${link.code}`;
+                const d = new Date(link.createdAt);
+                const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`;
+
+                return `
+          <div class="link-row">
+            <span class="link-code">${link.code}</span>
+            <span class="link-url" title="${link.url}">${link.url}</span>
+            <span class="link-date">${date}</span>
+            <div class="link-actions">
+              <button class="btn btn-secondary" onclick="openLink('${shortUrl}')">跳转</button>
+              <button class="btn btn-secondary" onclick="copyLink('${shortUrl}')">复制</button>
+              <button class="btn btn-danger" onclick="deleteLink('${link.code}')">删除</button>
+            </div>
+          </div>
+        `;
+            }).join('');
+        }
+
+        // 创建短链接
+        addForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const code = document.getElementById('shortCode').value.trim();
+            const url = document.getElementById('targetUrl').value.trim();
+
+            try {
+                const response = await fetch(`${API_BASE}/api/links`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ code, url })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('创建成功', 'success');
+                    addForm.reset();
+                    loadLinks();
+                } else {
+                    showToast(data.error || '创建失败', 'error');
+                }
+            } catch (err) {
+                showToast('创建失败', 'error');
+            }
+        });
+
+        // 删除短链接
+        let pendingDeleteCode = null;
+        const confirmModal = document.getElementById('confirmModal');
+        const confirmMessage = document.getElementById('confirmMessage');
+        const confirmBtn = document.getElementById('confirmBtn');
+
+        function deleteLink(code) {
+            pendingDeleteCode = code;
+            confirmMessage.textContent = `确定要删除短链接 "${code}" 吗？`;
+            confirmModal.classList.add('show');
+        }
+
+        function closeConfirm() {
+            confirmModal.classList.remove('show');
+            pendingDeleteCode = null;
+        }
+
+        confirmBtn.addEventListener('click', async () => {
+            if (!pendingDeleteCode) return;
+            const code = pendingDeleteCode;
+            closeConfirm();
+
+            try {
+                const response = await fetch(`${API_BASE}/api/links/${code}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('删除成功', 'success');
+                    loadLinks();
+                } else {
+                    showToast('删除失败', 'error');
+                }
+            } catch (err) {
+                showToast('删除失败', 'error');
+            }
+        });
+
+        // 跳转链接
+        function openLink(url) {
+            window.open(url, '_blank');
+        }
+
+        // 复制链接
+        function copyLink(url) {
+            navigator.clipboard.writeText(url).then(() => {
+                showToast('已复制到剪贴板', 'success');
+            }).catch(() => {
+                showToast('复制失败', 'error');
+            });
+        }
+
+        // 显示提示消息
+        function showToast(message, type = 'success') {
+            toast.textContent = message;
+            toast.className = `toast ${type} show`;
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+
+</html>
