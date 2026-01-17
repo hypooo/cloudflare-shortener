@@ -37,9 +37,12 @@
         }
 
         .container {
-            max-width: 900px;
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 40px 20px;
+            padding: 40px 20px 80px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         h1 {
@@ -207,7 +210,10 @@
         }
 
         .panel.active {
-            display: block;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
         }
 
         .header {
@@ -215,12 +221,50 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 32px;
+            flex-shrink: 0;
         }
 
         .header-actions {
             display: flex;
             gap: 12px;
             align-items: center;
+        }
+
+        .btn-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-icon:hover {
+            background: var(--border);
+            color: var(--text-primary);
+        }
+
+        .btn-icon svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .btn-icon.loading svg {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         /* 添加表单 */
@@ -230,6 +274,7 @@
             padding: 24px;
             margin-bottom: 24px;
             border: 1px solid var(--border);
+            flex-shrink: 0;
         }
 
         .add-form h3 {
@@ -260,21 +305,49 @@
             border-radius: 12px;
             overflow: hidden;
             border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .links-list-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+        }
+
+        .links-list-wrapper::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .links-list-wrapper::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .links-list-wrapper::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        .links-list-wrapper::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
         }
 
         .table-header {
             display: grid;
-            grid-template-columns: 140px 1fr 180px 200px;
+            grid-template-columns: 140px 1fr 100px 180px 200px;
             padding: 16px 20px;
             background: var(--bg-tertiary);
             font-size: 0.875rem;
             color: var(--text-secondary);
             font-weight: 500;
+            flex-shrink: 0;
         }
 
         .link-row {
             display: grid;
-            grid-template-columns: 140px 1fr 180px 200px;
+            grid-template-columns: 140px 1fr 100px 180px 200px;
             padding: 16px 20px;
             border-top: 1px solid var(--border);
             align-items: center;
@@ -304,6 +377,12 @@
             font-size: 0.875rem;
         }
 
+        .link-clicks {
+            color: var(--accent);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
         .link-actions {
             display: flex;
             gap: 8px;
@@ -328,11 +407,34 @@
         .search-bar {
             padding: 16px 20px;
             border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
         }
 
-        .search-bar input {
-            width: 100%;
+        .search-input-wrapper {
+            position: relative;
+            flex: 1;
             max-width: 400px;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-input-wrapper input {
+            width: 100%;
+            padding-right: 36px;
+        }
+
+        .search-input-wrapper .btn-icon-sm {
+            position: absolute;
+            right: 4px;
+            padding: 6px;
+        }
+
+        .btn-icon-sm svg {
+            width: 14px;
+            height: 14px;
         }
 
         /* 空状态 */
@@ -485,15 +587,33 @@
             <!-- 链接列表 -->
             <div class="links-table">
                 <div class="search-bar">
-                    <input type="text" id="searchInput" placeholder="搜索短码或目标 URL...">
+                    <div class="search-input-wrapper">
+                        <input type="text" id="searchInput" placeholder="搜索短码或目标 URL...">
+                        <button id="clearSearchBtn" class="btn-icon btn-icon-sm" title="清空搜索" style="display: none;">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    <button id="refreshBtn" class="btn-icon" title="刷新列表">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                    </button>
                 </div>
                 <div class="table-header">
                     <span>短码</span>
                     <span>目标 URL</span>
+                    <span>点击次数</span>
                     <span>创建时间</span>
                     <span>操作</span>
                 </div>
-                <div id="linksList"></div>
+                <div class="links-list-wrapper">
+                    <div id="linksList"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -532,6 +652,7 @@
         const addForm = document.getElementById('addForm');
         const linksList = document.getElementById('linksList');
         const logoutBtn = document.getElementById('logoutBtn');
+        const refreshBtn = document.getElementById('refreshBtn');
         const toast = document.getElementById('toast');
 
         // 初始化
@@ -590,7 +711,7 @@
                     loadLinks();
                     showToast('登录成功', 'success');
                 } else {
-                    showToast('密钥错误', 'error');
+                    showToast('密码错误', 'error');
                 }
             } catch (err) {
                 showToast('登录失败', 'error');
@@ -608,9 +729,18 @@
             document.getElementById('adminKey').value = '';
         }
 
+        // 刷新按钮
+        refreshBtn.addEventListener('click', async () => {
+            refreshBtn.classList.add('loading');
+            await loadLinks();
+            refreshBtn.classList.remove('loading');
+            showToast('刷新成功', 'success');
+        });
+
         // 加载链接列表
         let allLinks = [];
         const searchInput = document.getElementById('searchInput');
+        const clearSearchBtn = document.getElementById('clearSearchBtn');
 
         async function loadLinks() {
             try {
@@ -627,7 +757,18 @@
         }
 
         // 搜索过滤
-        searchInput.addEventListener('input', filterAndRenderLinks);
+        searchInput.addEventListener('input', () => {
+            clearSearchBtn.style.display = searchInput.value ? 'flex' : 'none';
+            filterAndRenderLinks();
+        });
+
+        // 清空搜索框
+        clearSearchBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            clearSearchBtn.style.display = 'none';
+            filterAndRenderLinks();
+            searchInput.focus();
+        });
 
         function filterAndRenderLinks() {
             const query = searchInput.value.toLowerCase().trim();
@@ -664,11 +805,13 @@
                 const shortUrl = `${location.origin}/${link.code}`;
                 const d = new Date(link.createdAt);
                 const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`;
+                const clicks = link.clicks || 0;
 
                 return `
           <div class="link-row">
             <span class="link-code">${link.code}</span>
             <span class="link-url" title="${link.url}">${link.url}</span>
+            <span class="link-clicks">${clicks}</span>
             <span class="link-date">${date}</span>
             <div class="link-actions">
               <button class="btn btn-secondary" onclick="openLink('${shortUrl}')">跳转</button>
@@ -773,7 +916,7 @@
 
             setTimeout(() => {
                 toast.classList.remove('show');
-            }, 3000);
+            }, 1500);
         }
     </script>
 </body>

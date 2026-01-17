@@ -24,7 +24,7 @@ pnpm dlx wrangler kv namespace create LINKS
 ```
 
 4. 编辑 `wrangler.toml`，填入：
-   - `ADMIN_KEY`: 你的管理密钥
+   - `ADMIN_KEY`: 你的管理密码
    - KV 命名空间的 `id`（上一步命令会输出）
 
 5. 部署

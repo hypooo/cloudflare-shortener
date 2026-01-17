@@ -32,7 +32,7 @@ export default {
         // 短链接重定向
         const code = path.slice(1);
         if (code) {
-            return handleRedirect(env, code);
+            return handleRedirect(env, ctx, code);
         }
 
         return new Response('Not Found', { status: 404 });
@@ -42,7 +42,7 @@ export default {
 /**
  * 处理短链接重定向
  */
-async function handleRedirect(env, code) {
+async function handleRedirect(env, ctx, code) {
     const data = await env.LINKS.get(code);
 
     if (!data) {
@@ -52,7 +52,19 @@ async function handleRedirect(env, code) {
         });
     }
 
-    const { url } = JSON.parse(data);
+    const parsed = JSON.parse(data);
+    const { url } = parsed;
+
+    // 异步更新点击计数，不阻塞重定向响应
+    ctx.waitUntil((async () => {
+        const freshData = await env.LINKS.get(code);
+        if (freshData) {
+            const linkData = JSON.parse(freshData);
+            linkData.clicks = (linkData.clicks || 0) + 1;
+            await env.LINKS.put(code, JSON.stringify(linkData));
+        }
+    })());
+
     return Response.redirect(url, 302);
 }
 
@@ -132,7 +144,8 @@ async function handleApi(request, env, path) {
 
         const data = {
             url,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            clicks: 0
         };
 
         await env.LINKS.put(code, JSON.stringify(data));
