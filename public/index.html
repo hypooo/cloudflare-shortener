@@ -108,7 +108,7 @@
 
         .github-link {
             position: fixed;
-            bottom: 24px;
+            bottom: 10px;
             left: 50%;
             transform: translateX(-50%);
             color: var(--text-secondary);
@@ -294,8 +294,30 @@
         }
 
         @media (max-width: 640px) {
+            .container {
+                padding: 16px 12px 60px;
+            }
+
+            .header {
+                margin-bottom: 16px;
+            }
+
+            .subtitle {
+                margin-bottom: 16px;
+            }
+
+            .add-form {
+                padding: 16px;
+                margin-bottom: 16px;
+            }
+
             .form-row {
                 grid-template-columns: 1fr;
+            }
+
+            .search-bar {
+                padding: 12px;
+                gap: 8px;
             }
         }
 
@@ -394,12 +416,56 @@
             }
 
             .link-row {
-                grid-template-columns: 1fr;
-                gap: 8px;
+                display: grid;
+                grid-template-columns: 1fr auto;
+                gap: 6px 12px;
+                padding: 16px;
+            }
+
+            .link-code {
+                grid-column: 1;
+                grid-row: 1;
+                font-size: 1.1rem;
+                font-weight: 600;
+            }
+
+            .link-clicks {
+                grid-column: 2;
+                grid-row: 1;
+                text-align: right;
+                align-self: center;
+            }
+
+            .link-clicks::before {
+                content: '点击: ';
+                color: var(--text-secondary);
+                font-weight: normal;
+                font-size: 0.85em;
+                margin-right: 4px;
+            }
+
+            .link-url {
+                grid-column: 1 / -1;
+                grid-row: 2;
+                font-size: 0.9rem;
+                color: var(--text-secondary);
+                margin-bottom: 2px;
+            }
+
+            .link-date {
+                grid-column: 1 / -1;
+                grid-row: 3;
+                font-size: 0.8rem;
+                opacity: 0.8;
+                margin-bottom: 8px;
             }
 
             .link-actions {
+                grid-column: 1 / -1;
+                grid-row: 4;
                 justify-content: flex-start;
+                padding-top: 8px;
+                border-top: 1px dashed var(--border);
             }
         }
 
