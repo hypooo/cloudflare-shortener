@@ -24,11 +24,6 @@ export default {
             return handleApi(request, env, path);
         }
 
-        // 根路径返回管理页面
-        if (path === '/' || path === '/index.html') {
-            return env.ASSETS.fetch(request);
-        }
-
         // 短链接重定向
         const code = path.slice(1);
         if (code) {
